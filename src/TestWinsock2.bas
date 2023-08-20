@@ -290,9 +290,13 @@ Private Sub TestAccept()
     
     Dim socketAddress As winsock2.sockaddr
     
+    ' TODO - Need to launch a new default browser window to localhost and the port. _
+             Test to make sure we can open and attempt the connection without waiting _
+             for a response back from the server, ie nonblocking open browser code
+    
     'Act:
     Dim result As Long
-    result = winsock2.accept(socket, socketAddress, 16)
+    result = winsock2.accept(socket, socketAddress, 16) ' NOTE - THE ACCEPT FUNCTION IS BLOCKING UNTIL A CONNECTION FROM A CLIENT IS MADE!
     
     'Assert:
     Assert.AreNotEqual winsock2.INVALID_SOCKET, result
