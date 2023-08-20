@@ -1,4 +1,4 @@
-Attribute VB_Name = "TestWsock32"
+Attribute VB_Name = "TestWinsock2"
 '@TestModule
 '@Folder("Tests")
 
@@ -218,8 +218,6 @@ TestExit:
     '@Ignore UnhandledOnErrorResumeNext
     On Error Resume Next
     
-    Debug.Print "Bind Error: " & winsock2.WSAGetLastError
-    
     winsock2.closesocket socket
     winsock2.WSACleanup
     Exit Sub
@@ -259,8 +257,6 @@ Private Sub TestListen()
 TestExit:
     '@Ignore UnhandledOnErrorResumeNext
     On Error Resume Next
-    
-    Debug.Print "Listen Error: " & winsock2.WSAGetLastError
     
     winsock2.closesocket socket
     winsock2.WSACleanup
@@ -304,8 +300,6 @@ Private Sub TestAccept()
 TestExit:
     '@Ignore UnhandledOnErrorResumeNext
     On Error Resume Next
-    
-    Debug.Print "Accept Error: " & winsock2.WSAGetLastError
     
     winsock2.closesocket socket
     winsock2.WSACleanup
