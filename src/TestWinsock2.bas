@@ -266,53 +266,6 @@ TestFail:
     Resume TestExit
 End Sub
 
-'@TestMethod("winsock2")
-Private Sub TestAccept()
-    On Error GoTo TestFail
-    
-    'Arrange:
-    Dim wsa As winsock2.WSADATA
-    winsock2.WSAStartup 257, wsa
-    
-    Dim socket As Long
-    socket = winsock2.socket(winsock2.AF_INET, winsock2.SOCK_STREAM, winsock2.IPPROTO_TCP)
-    
-    Dim port As Long
-    port = 8080
-    
-    Dim endpoint As winsock2.sockaddr_in
-    endpoint.sin_family = winsock2.AF_INET
-    endpoint.sin_addr.s_addr = winsock2.INADDR_ANY
-    endpoint.sin_port = winsock2.htons(port)
-    
-    winsock2.bind socket, endpoint, 16
-    winsock2.listen socket, 10
-    
-    Dim socketAddress As winsock2.sockaddr
-    
-    ' TODO - Need to launch a new default browser window to localhost and the port. _
-             Test to make sure we can open and attempt the connection without waiting _
-             for a response back from the server, ie nonblocking open browser code
-    
-    'Act:
-    Dim result As Long
-    result = winsock2.accept(socket, socketAddress, 16) ' NOTE - THE ACCEPT FUNCTION IS BLOCKING UNTIL A CONNECTION FROM A CLIENT IS MADE!
-    
-    'Assert:
-    Assert.AreNotEqual winsock2.INVALID_SOCKET, result
-
-TestExit:
-    '@Ignore UnhandledOnErrorResumeNext
-    On Error Resume Next
-    
-    winsock2.closesocket socket
-    winsock2.WSACleanup
-    Exit Sub
-TestFail:
-    Assert.Fail "Test raised an error: #" & Err.Number & " - " & Err.Description
-    Resume TestExit
-End Sub
-
 ''@TestMethod("winsock2")
 'Private Sub TestSelect_returnsNumberOfSocketHandles()
 '    On Error GoTo TestFail
@@ -343,11 +296,14 @@ End Sub
 '    time.tv_sec = 10
 '    time.tv_usec = 0
 '
+'    Dim driver As Long
+'    driver = win32.GetEdgeWindowHandle("http://localhost:8080/")
+'
 '    winsock2.FD_SET socket, readFDS
 '
 '    'Act:
 '    Dim result As Integer
-'    result = winsock2.select_(0, readFDS, emptyFDS, emptyFDS, time)
+'    result = winsock2.select_(socket + 1, readFDS, emptyFDS, emptyFDS, time)
 '
 '    'Assert:
 '    Assert.AreEqual 1, result
@@ -357,6 +313,8 @@ End Sub
 '    Debug.Print winsock2.WSAGetLastError()
 '    On Error Resume Next
 '
+'    win32.CloseWindow driver
+'
 '    winsock2.closesocket socket
 '    winsock2.WSACleanup
 '    Exit Sub
@@ -365,3 +323,104 @@ End Sub
 '    Resume TestExit
 'End Sub
 
+'@TestMethod("winsock2")
+Private Sub TestAccept()
+    On Error GoTo TestFail
+    
+    'Arrange:
+    Dim wsa As winsock2.WSADATA
+    winsock2.WSAStartup 257, wsa
+    
+    Dim socket As Long
+    socket = winsock2.socket(winsock2.AF_INET, winsock2.SOCK_STREAM, winsock2.IPPROTO_TCP)
+    
+    Dim port As Long
+    port = 8080
+    
+    Dim endpoint As winsock2.sockaddr_in
+    endpoint.sin_family = winsock2.AF_INET
+    endpoint.sin_addr.s_addr = winsock2.INADDR_ANY
+    endpoint.sin_port = winsock2.htons(port)
+    
+    winsock2.bind socket, endpoint, 16
+    winsock2.listen socket, 10
+    
+    Dim socketAddress As winsock2.sockaddr
+    
+    Dim driver As Long
+    driver = win32.GetEdgeWindowHandle("http://localhost:8080/")
+    
+    'Act:
+    Dim result As Long
+    result = winsock2.accept(socket, socketAddress, 16)
+    
+    'Assert:
+    Assert.AreNotEqual winsock2.INVALID_SOCKET, result
+
+TestExit:
+    '@Ignore UnhandledOnErrorResumeNext
+    On Error Resume Next
+    
+    win32.CloseWindow driver
+    
+    winsock2.closesocket socket
+    winsock2.WSACleanup
+    Exit Sub
+TestFail:
+    Assert.Fail "Test raised an error: #" & Err.Number & " - " & Err.Description
+    Resume TestExit
+End Sub
+
+'@TestMethod("winsock2")
+Private Sub TestSetsockopt()
+    On Error GoTo TestFail
+    
+    'Arrange:
+    Dim wsa As winsock2.WSADATA
+    winsock2.WSAStartup 257, wsa
+    
+    Dim socket As Long
+    socket = winsock2.socket(winsock2.AF_INET, winsock2.SOCK_STREAM, winsock2.IPPROTO_TCP)
+    
+    Dim port As Long
+    port = 8080
+    
+    Dim endpoint As winsock2.sockaddr_in
+    endpoint.sin_family = winsock2.AF_INET
+    endpoint.sin_addr.s_addr = winsock2.INADDR_ANY
+    endpoint.sin_port = winsock2.htons(port)
+    
+    winsock2.bind socket, endpoint, 16
+    winsock2.listen socket, 10
+    
+    Dim socketAddress As winsock2.sockaddr
+    
+    Dim driver As Long
+    driver = win32.GetEdgeWindowHandle("http://localhost:8080/")
+    
+    Dim clientSocket As Long
+    clientSocket = winsock2.accept(socket, socketAddress, 16)
+    
+    Dim timeout As Long
+    timeout = 10
+    
+    'Act:
+    Dim result As Long
+    result = winsock2.setsockopt(clientSocket, winsock2.SOL_SOCKET, winsock2.SO_RCVTIMEO, timeout, 4)
+    
+    'Assert:
+    Assert.AreNotEqual winsock2.SOCKET_ERROR, result
+
+TestExit:
+    '@Ignore UnhandledOnErrorResumeNext
+    On Error Resume Next
+    
+    win32.CloseWindow driver
+    
+    winsock2.closesocket socket
+    winsock2.WSACleanup
+    Exit Sub
+TestFail:
+    Assert.Fail "Test raised an error: #" & Err.Number & " - " & Err.Description
+    Resume TestExit
+End Sub

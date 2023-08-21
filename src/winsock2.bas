@@ -35,12 +35,12 @@ Public Type sockaddr_in
 End Type
 
 'Public Const FD_SETSIZE = 64
-
+'
 'Public Type FD_SET
 '    fd_count As Integer
 '    fd_array(FD_SETSIZE) As Long
 'End Type
-
+'
 'Public Type timeval
 '    tv_sec As Long
 '    tv_usec As Long
@@ -71,13 +71,10 @@ Public Declare PtrSafe Function accept Lib "ws2_32.dll" (ByVal socket As Long, c
 Public Declare PtrSafe Function setsockopt Lib "ws2_32.dll" (ByVal socket As Long, ByVal level As Long, ByVal optname As Long, ByRef optval As Long, ByVal optlen As Integer) As Long
 Public Declare PtrSafe Function send Lib "ws2_32.dll" (ByVal socket As Long, buffer As String, ByVal bufferLength As Long, ByVal flags As Long) As Long
 Public Declare PtrSafe Function recv Lib "ws2_32.dll" (ByVal socket As Long, ByVal buffer As String, ByVal bufferLength As Long, ByVal flags As Long) As Long
-'Public Declare PtrSafe Sub Sleep Lib "kernel32" (ByVal dwMilliseconds As LongPtr)
-'
-'
+
 'Public Sub FD_ZERO(ByRef s As FD_SET)
 '    s.fd_count = 0
 'End Sub
-'
 '
 'Public Sub FD_SET(ByVal fd As Long, ByRef s As FD_SET)
 '    Dim i As Integer
