@@ -1,58 +1,67 @@
-Attribute VB_Name = "TestWin32"
+Attribute VB_Name = "TestTcpServer"
 '@TestModule
 '@Folder("Tests")
 
 Option Explicit
 Option Private Module
 
+Private Type TServer
+    TcpServer As TcpServer
+End Type
+
 Private Assert As Rubberduck.AssertClass
 Private Fakes As Rubberduck.FakesProvider
+Private this As TServer
 
 '@ModuleInitialize
 Private Sub ModuleInitialize()
     'this method runs once per module.
     Set Assert = New Rubberduck.AssertClass
     Set Fakes = New Rubberduck.FakesProvider
+    Set this.TcpServer = New TcpServer
 End Sub
 
 '@ModuleCleanup
 Private Sub ModuleCleanup()
     'this method runs once per module.
+    Set this.TcpServer = Nothing
     Set Assert = Nothing
     Set Fakes = Nothing
 End Sub
 
 '@TestInitialize
 Private Sub TestInitialize()
-    'This method runs before every test in the module..
 End Sub
 
 '@TestCleanup
 Private Sub TestCleanup()
-    'this method runs after every test in the module.
 End Sub
 
-'@TestMethod("win32")
-Private Sub TestOpenNewBrowserInstance()
+'@TestMethod("TcpServer")
+Private Sub TestInit()
     On Error GoTo TestFail
     
     'Arrange:
-    Dim driver As Long
+    'We new up the TcpServer on the Module Test
+    'We should be able to create a socket with no error if the TcpServer is initialized properly
+    'winsock2.WSACleanup
     
     'Act:
-    driver = win32.GetEdgeWindowHandle("http://localhost:8080/")
+    Dim result As Long
+    result = winsock2.socket(winsock2.AF_INET, winsock2.SOCK_STREAM, winsock2.IPPROTO_TCP)
+    Debug.Print result
     
     'Assert:
-    Assert.AreNotEqual CLng(0), driver
+    Assert.AreNotEqual winsock2.INVALID_SOCKET, result
 
 TestExit:
     '@Ignore UnhandledOnErrorResumeNext
     On Error Resume Next
     
-    win32.CloseWindow driver
-    
+    winsock2.closesocket result
     Exit Sub
 TestFail:
     Assert.Fail "Test raised an error: #" & Err.Number & " - " & Err.Description
     Resume TestExit
 End Sub
+

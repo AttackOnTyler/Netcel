@@ -1,4 +1,4 @@
-Attribute VB_Name = "TestWin32"
+Attribute VB_Name = "TestStringExtensions"
 '@TestModule
 '@Folder("Tests")
 
@@ -32,24 +32,50 @@ Private Sub TestCleanup()
     'this method runs after every test in the module.
 End Sub
 
-'@TestMethod("win32")
-Private Sub TestOpenNewBrowserInstance()
+'@TestMethod("StringExtensions")
+Private Sub TestRepeat()
     On Error GoTo TestFail
     
     'Arrange:
-    Dim driver As Long
+    Const text As String = "a"
+    Const count As Long = 3
     
     'Act:
-    driver = win32.GetEdgeWindowHandle("http://localhost:8080/")
+    Dim result As String
+    result = StringExtensions.Repeat(text, count)
     
     'Assert:
-    Assert.AreNotEqual CLng(0), driver
+    Assert.AreEqual "aaa", result
 
 TestExit:
     '@Ignore UnhandledOnErrorResumeNext
     On Error Resume Next
     
-    win32.CloseWindow driver
+    Exit Sub
+TestFail:
+    Assert.Fail "Test raised an error: #" & Err.Number & " - " & Err.Description
+    Resume TestExit
+End Sub
+
+'@TestMethod("StringExtensions")
+Private Sub TestSubstring()
+    On Error GoTo TestFail
+    
+    'Arrange:
+    Const buffer As String = "abacaba"
+    Const startIndex As Long = 4
+    Const readBytes As Long = 4
+    
+    'Act:
+    Dim result As String
+    result = StringExtensions.Substring(buffer, startIndex, readBytes)
+    
+    'Assert:
+    Assert.AreEqual "caba", result
+
+TestExit:
+    '@Ignore UnhandledOnErrorResumeNext
+    On Error Resume Next
     
     Exit Sub
 TestFail:

@@ -17,7 +17,7 @@ Private Const WM_CLOSE = 16
 'Private Declare PtrSafe Function GetWindowThreadProcessId Lib "user32" (ByVal hwnd As Long, lpdwprocessid As Long) As Long
 Private Declare PtrSafe Function GetForegroundWindow Lib "user32" () As Long
 Private Declare PtrSafe Function SendMessage Lib "user32" Alias "SendMessageA" (ByVal hwnd As Long, ByVal wMsg As Long, ByVal wParam As Long, ByVal lParam As Long) As Long
-Private Declare PtrSafe Sub Sleep Lib "kernel32" (ByVal dwMilliseconds As Long)
+Public Declare PtrSafe Sub Sleep Lib "kernel32" (ByVal dwMilliseconds As Long)
 
 Public Function GetEdgeWindowHandle(ByVal url As String) As Long
     Shell "C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe --new-window " & url, vbNormalFocus

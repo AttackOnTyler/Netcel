@@ -69,8 +69,8 @@ Public Declare PtrSafe Function listen Lib "ws2_32.dll" (ByVal socket As Long, B
 'Public Declare PtrSafe Function select_ Lib "ws2_32.dll" Alias "select" (ByVal nfds As Integer, readFDS As FD_SET, writefds As FD_SET, exceptfds As FD_SET, timeout As timeval) As Integer
 Public Declare PtrSafe Function accept Lib "ws2_32.dll" (ByVal socket As Long, clientAddress As sockaddr, clientAddressLength As Integer) As Long
 Public Declare PtrSafe Function setsockopt Lib "ws2_32.dll" (ByVal socket As Long, ByVal level As Long, ByVal optname As Long, ByRef optval As Long, ByVal optlen As Integer) As Long
-Public Declare PtrSafe Function send Lib "ws2_32.dll" (ByVal socket As Long, buffer As String, ByVal bufferLength As Long, ByVal flags As Long) As Long
 Public Declare PtrSafe Function recv Lib "ws2_32.dll" (ByVal socket As Long, ByVal buffer As String, ByVal bufferLength As Long, ByVal flags As Long) As Long
+Public Declare PtrSafe Function send Lib "ws2_32.dll" (ByVal socket As Long, buffer As String, ByVal bufferLength As Long, ByVal flags As Long) As Long
 
 'Public Sub FD_ZERO(ByRef s As FD_SET)
 '    s.fd_count = 0
