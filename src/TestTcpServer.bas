@@ -44,12 +44,10 @@ Private Sub TestInit()
     'Arrange:
     'We new up the TcpServer on the Module Test
     'We should be able to create a socket with no error if the TcpServer is initialized properly
-    'winsock2.WSACleanup
     
     'Act:
     Dim result As Long
     result = winsock2.socket(winsock2.AF_INET, winsock2.SOCK_STREAM, winsock2.IPPROTO_TCP)
-    Debug.Print result
     
     'Assert:
     Assert.AreNotEqual winsock2.INVALID_SOCKET, result
@@ -59,6 +57,31 @@ TestExit:
     On Error Resume Next
     
     winsock2.closesocket result
+    Exit Sub
+TestFail:
+    Assert.Fail "Test raised an error: #" & Err.Number & " - " & Err.Description
+    Resume TestExit
+End Sub
+
+'@TestMethod("TcpServer")
+Private Sub TestBindAndListenOn()
+    On Error GoTo TestFail
+    
+    'Arrange:
+    'We new up the TcpServer on the Module Test
+    'We should be able to Bind and Listen on a port
+    
+    'Act:
+    Dim result As Long
+    result = this.TcpServer.BindAndListenOn(port:=8080)
+    
+    'Assert:
+    Assert.AreNotEqual winsock2.INVALID_SOCKET, result
+
+TestExit:
+    '@Ignore UnhandledOnErrorResumeNext
+    On Error Resume Next
+    
     Exit Sub
 TestFail:
     Assert.Fail "Test raised an error: #" & Err.Number & " - " & Err.Description
