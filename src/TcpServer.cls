@@ -26,12 +26,7 @@ Public Function BindAndListenOn(ByVal port As Long, Optional ByVal backlog As In
     
     If this.socket = winsock2.INVALID_SOCKET Then GoTo SocketFail
     
-    Dim endpoint As winsock2.sockaddr_in
-    endpoint.sin_family = winsock2.AF_INET
-    endpoint.sin_addr.s_addr = winsock2.INADDR_ANY
-    endpoint.sin_port = winsock2.htons(port)
-    
-    If winsock2.bind(this.socket, endpoint, 16) = winsock2.SOCKET_ERROR Then GoTo BindAndListenOnFail
+    If winsock2.bind(this.socket, endpoint(port), 16) = winsock2.SOCKET_ERROR Then GoTo BindAndListenOnFail
     
     If winsock2.listen(this.socket, backlog) = winsock2.SOCKET_ERROR Then GoTo BindAndListenOnFail
     
