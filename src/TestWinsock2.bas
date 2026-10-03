@@ -91,7 +91,7 @@ Private Sub TestSocket()
     winsock2.WSAStartup 257, wsa
     
     'Act:
-    Dim result As Long
+    Dim result As LongPtr
     result = winsock2.socket(winsock2.AF_INET, winsock2.SOCK_STREAM, winsock2.IPPROTO_TCP)
     
     'Assert:
@@ -114,7 +114,7 @@ Private Sub TestCloseSocket()
     On Error GoTo TestFail
     
     'Arrange:
-    Dim wsocket As Long
+    Dim wsocket As LongPtr
     Dim wsa As winsock2.WSADATA
     winsock2.WSAStartup 257, wsa
     wsocket = winsock2.socket(winsock2.AF_INET, winsock2.SOCK_STREAM, winsock2.IPPROTO_TCP)
@@ -196,7 +196,7 @@ Private Sub TestBind()
     Dim wsa As winsock2.WSADATA
     winsock2.WSAStartup 257, wsa
     
-    Dim socket As Long
+    Dim socket As LongPtr
     socket = winsock2.socket(winsock2.AF_INET, winsock2.SOCK_STREAM, winsock2.IPPROTO_TCP)
     
     Dim port As Long
@@ -234,7 +234,7 @@ Private Sub TestListen()
     Dim wsa As winsock2.WSADATA
     winsock2.WSAStartup 257, wsa
     
-    Dim socket As Long
+    Dim socket As LongPtr
     socket = winsock2.socket(winsock2.AF_INET, winsock2.SOCK_STREAM, winsock2.IPPROTO_TCP)
     
     Dim port As Long
@@ -274,7 +274,7 @@ End Sub
 '    Dim wsa As winsock2.WSADATA
 '    winsock2.WSAStartup 257, wsa
 '
-'    Dim socket As Long
+'    Dim socket As LongPtr
 '    socket = winsock2.socket(winsock2.AF_INET, winsock2.SOCK_STREAM, winsock2.IPPROTO_TCP)
 '
 '    Dim port As Long
@@ -296,7 +296,7 @@ End Sub
 '    time.tv_sec = 10
 '    time.tv_usec = 0
 '
-'    Dim driver As Long
+'    Dim driver As LongPtr
 '    driver = win32.GetEdgeWindowHandle("http://localhost:8080/")
 '
 '    winsock2.FD_SET socket, readFDS
@@ -331,7 +331,7 @@ Private Sub TestAccept()
     Dim wsa As winsock2.WSADATA
     winsock2.WSAStartup 257, wsa
     
-    Dim socket As Long
+    Dim socket As LongPtr
     socket = winsock2.socket(winsock2.AF_INET, winsock2.SOCK_STREAM, winsock2.IPPROTO_TCP)
     
     Dim port As Long
@@ -345,14 +345,13 @@ Private Sub TestAccept()
     winsock2.bind socket, endpoint, 16
     winsock2.listen socket, 10
     
-    Dim socketAddress As winsock2.sockaddr
     
-    Dim driver As Long
+    Dim driver As LongPtr
     driver = win32.GetEdgeWindowHandle("http://localhost:8080/")
     
     'Act:
-    Dim result As Long
-    result = winsock2.accept(socket, socketAddress, 16)
+    Dim result As LongPtr
+    result = winsock2.accept(socket, 0, 0)
     
     'Assert:
     Assert.AreNotEqual winsock2.INVALID_SOCKET, result
@@ -379,7 +378,7 @@ Private Sub TestSetsockopt()
     Dim wsa As winsock2.WSADATA
     winsock2.WSAStartup 257, wsa
     
-    Dim socket As Long
+    Dim socket As LongPtr
     socket = winsock2.socket(winsock2.AF_INET, winsock2.SOCK_STREAM, winsock2.IPPROTO_TCP)
     
     Dim port As Long
@@ -393,13 +392,12 @@ Private Sub TestSetsockopt()
     winsock2.bind socket, endpoint, 16
     winsock2.listen socket, 10
     
-    Dim socketAddress As winsock2.sockaddr
     
-    Dim driver As Long
+    Dim driver As LongPtr
     driver = win32.GetEdgeWindowHandle("http://localhost:8080/")
     
-    Dim clientSocket As Long
-    clientSocket = winsock2.accept(socket, socketAddress, 16)
+    Dim clientSocket As LongPtr
+    clientSocket = winsock2.accept(socket, 0, 0)
     
     Dim timeout As Long
     timeout = 10
@@ -433,7 +431,7 @@ Private Sub TestRecv()
     Dim wsa As winsock2.WSADATA
     winsock2.WSAStartup 257, wsa
     
-    Dim socket As Long
+    Dim socket As LongPtr
     socket = winsock2.socket(winsock2.AF_INET, winsock2.SOCK_STREAM, winsock2.IPPROTO_TCP)
     
     Dim port As Long
@@ -447,13 +445,12 @@ Private Sub TestRecv()
     winsock2.bind socket, endpoint, 16
     winsock2.listen socket, 10
     
-    Dim socketAddress As winsock2.sockaddr
     
-    Dim driver As Long
+    Dim driver As LongPtr
     driver = win32.GetEdgeWindowHandle("http://localhost:8080/")
     
-    Dim clientSocket As Long
-    clientSocket = winsock2.accept(socket, socketAddress, 16)
+    Dim clientSocket As LongPtr
+    clientSocket = winsock2.accept(socket, 0, 0)
     
     Dim timeout As Long
     timeout = 10
@@ -462,12 +459,12 @@ Private Sub TestRecv()
     
     Const bytes As Long = 1024
     
-    Dim buffer As String
-    buffer = StringExtensions.Repeat(Chr(0), bytes)
+    Dim buffer() As Byte
+    ReDim buffer(0 To bytes - 1)
     
     'Act:
     Dim result As Long
-    result = winsock2.recv(clientSocket, buffer, bytes, 0)
+    result = winsock2.recv(clientSocket, buffer(0), bytes, 0)
     
     'Assert:
     Assert.AreNotEqual winsock2.SOCKET_ERROR, result
@@ -494,7 +491,7 @@ Private Sub TestSend()
     Dim wsa As winsock2.WSADATA
     winsock2.WSAStartup 257, wsa
     
-    Dim socket As Long
+    Dim socket As LongPtr
     socket = winsock2.socket(winsock2.AF_INET, winsock2.SOCK_STREAM, winsock2.IPPROTO_TCP)
     
     Dim port As Long
@@ -508,13 +505,12 @@ Private Sub TestSend()
     winsock2.bind socket, endpoint, 16
     winsock2.listen socket, 10
     
-    Dim socketAddress As winsock2.sockaddr
     
-    Dim driver As Long
+    Dim driver As LongPtr
     driver = win32.GetEdgeWindowHandle("http://localhost:8080/")
     
-    Dim clientSocket As Long
-    clientSocket = winsock2.accept(socket, socketAddress, 16)
+    Dim clientSocket As LongPtr
+    clientSocket = winsock2.accept(socket, 0, 0)
     
     Dim timeout As Long
     timeout = 10
@@ -522,9 +518,11 @@ Private Sub TestSend()
     winsock2.setsockopt clientSocket, winsock2.SOL_SOCKET, winsock2.SO_RCVTIMEO, timeout, 4
     
     Const buffer As String = "HTTP/1.1 200 OK" & vbCrLf & "Server: Microsoft Excel/16.0" & vbCrLf & "Content-Length: 21" & vbCrLf & "Connection: close" & vbCrLf & vbCrLf & "<h1>Hello World!</h1>"
+    Dim payload() As Byte
+    payload = TextEncoding.Utf8Encode(buffer)
     'Act:
     Dim result As Long
-    result = winsock2.send(clientSocket, ByVal buffer, Len(buffer), 0)
+    result = winsock2.send(clientSocket, payload(0), UBound(payload) + 1, 0)
     
     'Assert:
     Assert.AreNotEqual winsock2.SOCKET_ERROR, result

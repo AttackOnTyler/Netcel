@@ -2,25 +2,36 @@ Attribute VB_Name = "winsock2"
 '@Folder("app.resources.win32")
 Option Explicit
 
-Public Const WSADESCRIPTION_LEN = 256
-Public Const WSASYS_STATUS_LEN = 128
+'Winsock2 declarations for 64-bit (and 32-bit) VBA7.
+'SOCKET is UINT_PTR in C, so every socket handle is a LongPtr here.
+'int / u_long parameters are 32-bit (Long); u_short is 16-bit (Integer).
 
-Public Const WSADESCRIPTION_LEN_ARRAY = WSADESCRIPTION_LEN + 1
-Public Const WSASYS_STATUS_LEN_ARRAY = WSASYS_STATUS_LEN + 1
+Public Const AF_INET As Long = 2
+Public Const SOCK_STREAM As Long = 1
+Public Const IPPROTO_TCP As Long = 6
+Public Const INADDR_ANY As Long = 0
+Public Const INADDR_NONE As Long = -1
 
-Public Const AF_INET = 2
-Public Const SOCK_STREAM = 1
-Public Const IPPROTO_TCP = 6
-Public Const INADDR_ANY = 0
+Public Const INVALID_SOCKET As Long = -1 'compared against LongPtr; (UINT_PTR)~0 == -1 signed
+Public Const SOCKET_ERROR As Long = -1
 
+Public Const SOL_SOCKET As Long = &HFFFF&
+Public Const SO_RCVTIMEO As Long = &H1006&
+Public Const SO_EXCLUSIVEADDRUSE As Long = -5 '~SO_REUSEADDR
+
+Public Const FIONBIO As Long = &H8004667E 'set/clear non-blocking i/o
+
+Public Const SD_RECEIVE As Long = 0
+Public Const SD_SEND As Long = 1
+Public Const SD_BOTH As Long = 2
+
+Public Const WSAEWOULDBLOCK As Long = 10035
+Public Const WSAEADDRINUSE As Long = 10048
+
+'WSADATA layout differs between 32-bit and 64-bit Windows (field order changes),
+'and nothing here reads it, so it is treated as an opaque, generously sized blob.
 Public Type WSADATA
-    wVersion As Integer
-    wHighVersion As Integer
-    szDescription As String * WSADESCRIPTION_LEN_ARRAY
-    szSystemStatus As String * WSASYS_STATUS_LEN_ARRAY
-    iMaxSockets As Integer
-    iMaxUdpDg As Integer
-    lpVendorInfo As String
+    data(0 To 511) As Byte
 End Type
 
 Public Type IN_ADDR
@@ -31,67 +42,43 @@ Public Type sockaddr_in
     sin_family As Integer
     sin_port As Integer
     sin_addr As IN_ADDR
-    sin_zero As String * 8
+    sin_zero(0 To 7) As Byte
 End Type
 
-'Public Const FD_SETSIZE = 64
-'
-'Public Type FD_SET
-'    fd_count As Integer
-'    fd_array(FD_SETSIZE) As Long
-'End Type
-'
-'Public Type timeval
-'    tv_sec As Long
-'    tv_usec As Long
-'End Type
+Public Const SOCKADDR_IN_SIZE As Long = 16
 
-Public Type sockaddr
-    sa_family As Integer
-    sa_data As String * 14
-End Type
-
-Public Const INVALID_SOCKET As Long = -1
-Public Const SOCKET_ERROR As Long = -1
-
-Public Const SOL_SOCKET = 65535
-Public Const SO_RCVTIMEO = &H1006
-
-Public Declare PtrSafe Function WSAStartup Lib "ws2_32.dll" (ByVal versionRequired As Long, wsa As WSADATA) As Long
-Public Declare PtrSafe Function WSAGetLastError Lib "ws2_32.dll" () As Long
+Public Declare PtrSafe Function WSAStartup Lib "ws2_32.dll" (ByVal versionRequired As Integer, ByRef wsa As WSADATA) As Long
 Public Declare PtrSafe Function WSACleanup Lib "ws2_32.dll" () As Long
-Public Declare PtrSafe Function socket Lib "ws2_32.dll" (ByVal addressFamily As Long, ByVal socketType As Long, ByVal protocol As Long) As Long
-Public Declare PtrSafe Function closesocket Lib "ws2_32.dll" (ByVal s As Long) As Long
-Public Declare PtrSafe Function htons Lib "ws2_32.dll" (ByVal hostShort As Long) As Integer
-Public Declare PtrSafe Function ntohs Lib "ws2_32.dll" (ByVal netShort As Integer) As Long
-Public Declare PtrSafe Function bind Lib "ws2_32.dll" (ByVal socket As Long, name As sockaddr_in, ByVal nameLength As Integer) As Long
-Public Declare PtrSafe Function listen Lib "ws2_32.dll" (ByVal socket As Long, ByVal backlog As Integer) As Long
-'Public Declare PtrSafe Function select_ Lib "ws2_32.dll" Alias "select" (ByVal nfds As Integer, readFDS As FD_SET, writefds As FD_SET, exceptfds As FD_SET, timeout As timeval) As Integer
-Public Declare PtrSafe Function accept Lib "ws2_32.dll" (ByVal socket As Long, clientAddress As sockaddr, clientAddressLength As Integer) As Long
-Public Declare PtrSafe Function setsockopt Lib "ws2_32.dll" (ByVal socket As Long, ByVal level As Long, ByVal optname As Long, ByRef optval As Long, ByVal optlen As Integer) As Long
-Public Declare PtrSafe Function recv Lib "ws2_32.dll" (ByVal socket As Long, ByVal buffer As String, ByVal bufferLength As Long, ByVal flags As Long) As Long
-Public Declare PtrSafe Function send Lib "ws2_32.dll" (ByVal socket As Long, buffer As String, ByVal bufferLength As Long, ByVal flags As Long) As Long
+Public Declare PtrSafe Function WSAGetLastError Lib "ws2_32.dll" () As Long
 
-'Public Sub FD_ZERO(ByRef s As FD_SET)
-'    s.fd_count = 0
-'End Sub
-'
-'Public Sub FD_SET(ByVal fd As Long, ByRef s As FD_SET)
-'    Dim i As Integer
-'    i = 0
-'
-'    Do While i < s.fd_count
-'        If s.fd_array(i) = fd Then
-'            Exit Do
-'        End If
-'
-'        i = i + 1
-'    Loop
-'
-'    If i = s.fd_count Then
-'        If s.fd_count < FD_SETSIZE Then
-'            s.fd_array(i) = fd
-'            s.fd_count = s.fd_count + 1
-'        End If
-'    End If
-'End Sub
+Public Declare PtrSafe Function socket Lib "ws2_32.dll" (ByVal addressFamily As Long, ByVal socketType As Long, ByVal protocol As Long) As LongPtr
+Public Declare PtrSafe Function closesocket Lib "ws2_32.dll" (ByVal s As LongPtr) As Long
+Public Declare PtrSafe Function shutdown Lib "ws2_32.dll" (ByVal s As LongPtr, ByVal how As Long) As Long
+Public Declare PtrSafe Function bind Lib "ws2_32.dll" (ByVal s As LongPtr, ByRef name As sockaddr_in, ByVal nameLength As Long) As Long
+Public Declare PtrSafe Function listen Lib "ws2_32.dll" (ByVal s As LongPtr, ByVal backlog As Long) As Long
+'Pass 0, 0 for addr/addrlen when the peer address is not needed.
+Public Declare PtrSafe Function accept Lib "ws2_32.dll" (ByVal s As LongPtr, ByVal addr As LongPtr, ByVal addrLength As LongPtr) As LongPtr
+'Pass the first element of a Byte array, e.g. recv(s, buffer(0), size, 0).
+Public Declare PtrSafe Function recv Lib "ws2_32.dll" (ByVal s As LongPtr, ByRef buffer As Byte, ByVal bufferLength As Long, ByVal flags As Long) As Long
+Public Declare PtrSafe Function send Lib "ws2_32.dll" (ByVal s As LongPtr, ByRef buffer As Byte, ByVal bufferLength As Long, ByVal flags As Long) As Long
+Public Declare PtrSafe Function setsockopt Lib "ws2_32.dll" (ByVal s As LongPtr, ByVal level As Long, ByVal optname As Long, ByRef optval As Any, ByVal optlen As Long) As Long
+Public Declare PtrSafe Function ioctlsocket Lib "ws2_32.dll" (ByVal s As LongPtr, ByVal cmd As Long, ByRef argp As Long) As Long
+
+Public Declare PtrSafe Function htons Lib "ws2_32.dll" (ByVal hostShort As Integer) As Integer
+Public Declare PtrSafe Function ntohs Lib "ws2_32.dll" (ByVal netShort As Integer) As Integer
+Public Declare PtrSafe Function inet_addr Lib "ws2_32.dll" (ByVal cp As String) As Long
+
+'htons for the full 0..65535 port range without Integer overflow in VBA.
+Public Function PortToNetwork(ByVal port As Long) As Integer
+    Dim swapped As Long
+    swapped = ((port And &HFF&) * &H100&) Or ((port \ &H100&) And &HFF&)
+    If swapped >= &H8000& Then swapped = swapped - &H10000
+    PortToNetwork = CInt(swapped)
+End Function
+
+'Puts a socket into (or out of) non-blocking mode. Returns True on success.
+Public Function SetNonBlocking(ByVal s As LongPtr, Optional ByVal enabled As Boolean = True) As Boolean
+    Dim mode As Long
+    If enabled Then mode = 1
+    SetNonBlocking = (ioctlsocket(s, FIONBIO, mode) <> SOCKET_ERROR)
+End Function
