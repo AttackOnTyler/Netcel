@@ -37,13 +37,13 @@ Private Sub TestOpenNewBrowserInstance()
     On Error GoTo TestFail
     
     'Arrange:
-    Dim driver As Long
+    Dim driver As LongPtr
     
     'Act:
     driver = win32.GetEdgeWindowHandle("http://localhost:8080/")
     
     'Assert:
-    Assert.AreNotEqual CLng(0), driver
+    Assert.AreNotEqual CLngPtr(0), driver
 
 TestExit:
     '@Ignore UnhandledOnErrorResumeNext

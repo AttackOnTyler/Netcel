@@ -1,2 +1,6 @@
 ﻿'@Folder("app.providers")
 Option Explicit
+
+Private Sub Workbook_BeforeClose(Cancel As Boolean)
+    NetcelServer.OnWorkbookClosing
+End Sub

@@ -46,7 +46,7 @@ Private Sub TestInit()
     'We should be able to create a socket with no error if the TcpServer is initialized properly
     
     'Act:
-    Dim result As Long
+    Dim result As LongPtr
     result = winsock2.socket(winsock2.AF_INET, winsock2.SOCK_STREAM, winsock2.IPPROTO_TCP)
     
     'Assert:
